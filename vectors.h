@@ -50,4 +50,6 @@ int	closingesc(t_data *data);
 float vec2_length(Vec2 v);
 float vec3_length(Vec3 v);
 Vec2 vec2_subtract_scalar(Vec2 a, float scalar);
+float clamp(float x, float min, float max);
+float smoothstep(float edge0, float edge1, float x);
 #endif

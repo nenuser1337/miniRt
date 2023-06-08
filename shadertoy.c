@@ -22,14 +22,15 @@ void   vec3(t_data *data, Vec3 fragColor, Vec2 fragCoord,Vec2 iResolution) {
 
                 // Flip the y-coordinate
                 uv.y = 1.0 - uv.y;
-              // uv = vec2_subtract_scalar(uv, 0.5f);
-             //  uv.x *= iResolution.x / iResolution.y;
+             uv = vec2_subtract_scalar(uv, 0.5f);
+            uv.x *= iResolution.x / iResolution.y;
 
 
                 Vec2 smtg = vec2_subtract(uv , vec2_create(0.5f, 0.5f));
                 // Compute length of uv and normalize it
                 float d = vec2_length(uv) / maxDist;
-                float c = d;
+                float r = 0.3;
+                float c = smoothstep(r, r-0.01, d );
                     // if (d < 0.3)
                     //      c = 1.0;
                     // else
