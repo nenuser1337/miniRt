@@ -97,3 +97,34 @@ Vec2 vec2_subtract_scalar(Vec2 a, float scalar) {
     return result;
 }
 
+Vec4 vec4_create(float x, float y, float z, float w) {
+    Vec4 v;
+    v.x = x;
+    v.y = y;
+    v.z = z;
+    v.w = w;
+    return v;
+}
+
+int vec4_to_color(Vec4 color) {
+    int r = (int)(color.x * 255);
+    int g = (int)(color.y * 255);
+    int b = (int)(color.z * 255);
+    int a = (int)(color.w * 255);
+
+    // Assuming you're using a 32-bit color depth (ARGB), and color components are in the range [0, 255]
+    return (a << 24) + (r << 16) + (g << 8) + b;
+}
+Vec3 vec3_multiply_scalar(Vec3 v, float scalar) {
+    v.r *= scalar;
+    v.g *= scalar;
+    v.b *= scalar;
+    return v;
+}
+
+Vec3 vec3_add_scalar(Vec3 v, float scalar) {
+    v.r += scalar;
+    v.g += scalar;
+    v.b += scalar;
+    return v;
+}

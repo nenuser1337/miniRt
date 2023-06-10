@@ -25,3 +25,40 @@ float smoothstep(float edge0, float edge1, float x) {
     // Evaluate polynomial
     return x * x * (3 - 2 * x);
 }
+
+
+float Circle(Vec2 uv, Vec2 p, float r, float blur) {
+    float d = vec2_length(vec2_subtract(uv, p));
+    float c =  smoothstep(r, r - blur, d);
+    return c;
+}
+
+
+float min(float a, float b) {
+    return (a < b) ? a : b;
+}
+
+float max(float a, float b) {
+    return (a > b) ? a : b;
+}
+
+float Band(float t, float start, float end, float blur) {
+    float step1 = smoothstep(start - blur, start + blur, t);
+    float step2 = smoothstep(end + blur, end - blur, t);
+    return step1 * step2;
+}
+
+float Rect(Vec2 uv, float left, float right, float bottom, float top, float blur) {
+    float band1 = Band(uv.x, left, right, blur);
+    float band2 = Band(uv.y, bottom, top, blur);
+    return band1 * band2;
+}
+
+
+float remap01(float a, float b, float t) {
+    return (t-a) / (b-a);
+}
+
+float remap(float a, float b, float c, float d, float t) {
+    return remap01(a, b, t) * (d-c) + c;
+}
