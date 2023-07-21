@@ -1,6 +1,6 @@
-NAME=draw.a
+NAME=sphere.a
 
-FILES= draw vectors shadertoy closing utils
+FILES=  main sphere_cylinder  utils utils2 vectors shader_utils
 
 OBJ=$(FILES:=.o)
 
@@ -13,7 +13,7 @@ all: $(NAME)
 
 $(NAME):
 	$(LINKS)  
-	./a.out
+	
 #ar rcs $(NAME) $(OBJ) 
 
 clean:

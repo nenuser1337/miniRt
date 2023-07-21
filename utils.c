@@ -62,3 +62,40 @@ float remap01(float a, float b, float t) {
 float remap(float a, float b, float c, float d, float t) {
     return remap01(a, b, t) * (d-c) + c;
 }
+
+Vec2 vec2_floor_multiply(Vec2 v, float scalar) {
+    Vec2 result;
+    result.x = floorf(v.x * scalar);
+    result.y = floorf(v.y * scalar);
+    return result;
+}
+
+float mix(float x, float y, float a) {
+    return x * (1 - a) + y * a;
+}
+
+Vec3 mix_vec3(Vec3 x, Vec3 y, float a) {
+    Vec3 result;
+    result.r = mix(x.r, y.r, a);
+    result.g = mix(x.g, y.g, a);
+    result.b = mix(x.b, y.b, a);
+    return result;
+}
+
+Vec2 fract_vec2(Vec2 v) {
+    Vec2 result;
+    result.x = v.x - floorf(v.x);
+    result.y = v.y - floorf(v.y);
+    return result;
+}
+
+float dot_vec2(Vec2 v1, Vec2 v2) {
+    return v1.x * v2.x + v1.y * v2.y;
+}
+
+float step(float edge, float x) {
+    return x < edge ? 0.0f : 1.0f;
+}
+float inversesqrt(float x) {
+    return 1.0f / sqrtf(x);
+}

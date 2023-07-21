@@ -128,3 +128,29 @@ Vec3 vec3_add_scalar(Vec3 v, float scalar) {
     v.b += scalar;
     return v;
 }
+
+Vec3 cross_vec3(Vec3 x, Vec3 y) {
+    Vec3 result;
+    result.r = x.g * y.b - x.b * y.g;
+    result.g = x.b * y.r - x.r * y.b;
+    result.b = x.r * y.g - x.g * y.r;
+    return result;
+}
+
+Vec3 reflect(Vec3 I, Vec3 N) {
+    float NdotI = dot_vec3(N, I);
+    Vec3 term1 = vec3_multiply_float(N, 2.0f * NdotI);
+    return vec3_subtract(I, term1);
+}
+
+Vec3 mat3_mul_vec3(mat3 m, Vec3 v) {
+    Vec3 result;
+    result.r = m.m[0][0] * v.r + m.m[0][1] * v.g + m.m[0][2] * v.b;
+    result.g = m.m[1][0] * v.r + m.m[1][1] * v.g + m.m[1][2] * v.b;
+    result.b = m.m[2][0] * v.r + m.m[2][1] * v.g + m.m[2][2] * v.b;
+    return result;
+}
+
+float sign(float x) {
+    return (x > 0) - (x < 0);
+}
