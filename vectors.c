@@ -154,3 +154,17 @@ Vec3 mat3_mul_vec3(mat3 m, Vec3 v) {
 float sign(float x) {
     return (x > 0) - (x < 0);
 }
+
+float vec3_length_squared(Vec3 v) {
+    return v.r * v.r + v.g * v.g + v.b * v.b;
+}
+
+Vec3 vec3_multiply_vec(Vec3 a, Vec3 b) {
+    Vec3 result;
+
+    result.r = a.r * b.r;
+    result.g = a.g * b.g;
+    result.b = a.b * b.b;
+
+    return result;
+}

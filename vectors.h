@@ -62,13 +62,7 @@ typedef struct {
     float m[3][3];
 } mat3;
 
-/* shader structure , setting the camera space */
-struct Camera 
-{
-    Vec3 position;
-    Vec3 direction;
-    float zoom; 
-} camera;
+
 
 struct Sphere
 {
@@ -79,16 +73,29 @@ struct Sphere
 
 struct Light
 {
-	Vec3 direction;    
+	Vec3 position;
+    Vec3 color;
+    float brightness;  
 } light;
 
-struct Material 
-{
-    float diffuse;
-    float specular;
-    float shininess;
-    float ambience;
+struct AmbientLight {
+    float ratio;
+    Vec3 color;
+} ambientLight;
+
+struct Camera {
+    Vec3 position;
+    Vec3 direction;
+    float fov;
+}   camera;
+
+struct Material {
+    float ambience;  // The ambient reflection coefficient
+    float diffuse;   // The diffuse reflection coefficient
+    float specular;  // The specular reflection coefficient
+    float shininess; // The shininess coefficient
 } material;
+
 
 struct Cylinder
 {
@@ -212,4 +219,6 @@ int cylinder_raytracing(t_vars *vars);
 float sign(float x);
 bool intersect_sphere(Vec3 direction, Vec3 *surfaceNormal);
 int rendering(t_vars *vars);
+float vec3_length_squared(Vec3 v);
+Vec3 vec3_multiply_vec(Vec3 a, Vec3 b);
 #endif

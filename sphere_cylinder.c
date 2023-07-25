@@ -1,32 +1,35 @@
 #include "vectors.h"
+
+
+
+
+
+
 // Function to initialize our scene's parameters
-void setupScene()
-{
-    // Set the camera's position and direction, and its zoom level
+void setupScene() {
+    
+
+    // Set the camera's position, direction (normalized orientation vector), and FOV
     camera.position = vec3_create(0., 0., 3.5);
     camera.direction = vec3_create(0., 0., -1.);
-    camera.zoom = 1.0;
-    
-    // Set the sphere's position, radius, and color
-    sphere.position = vec3_create(0., 0., 0.);
-    sphere.radius = 0.3;
-    sphere.color = vec3_create(0.6, 0.9, 0.3);
+    camera.fov =2;
 
+    // Set the light's position, brightness ratio, and RGB color
+     light.position = normalize_vec3(vec3_create(40., 50., 0.));
+    light.color = normalize_vec3(vec3_create(10./255., 0., 255./255.)); // Normalize color from [0-255] to [0.0-1.0]
+    light.brightness = 0.6;
 
+    // Set the material's ambient, diffuse, specular and shininess coefficients
+     material.ambience = 0.2;
+    material.diffuse = 0.7;
+    material.specular = 1.9;
+    material.shininess = 5.0;
     cylinder.position = vec3_create(0., -0.5, 0.);
     cylinder.radius = 0.3;
     cylinder.height = 1.0;
     cylinder.color = vec3_create(0.2, 0.3, 0.9);
-    
-    // Set the light's direction and normalize it
-    light.direction = normalize_vec3(vec3_create(0., 1., -0.78));
-    
-    // Set the material's ambience, diffuse, specular, and shininess properties
-    material.ambience = 0.2;
-    material.diffuse = 0.7;
-    material.specular = 1.4;
-    material.shininess = 12.0; 
 }
+
 
 
 // Function to solve a quadratic equation given a, b, and c coefficients
@@ -55,40 +58,40 @@ bool solveQuadratic(float a, float b, float c,  float *t0,  float *t1)
 }
 
 
-bool intersect_sphere(Vec3 direction, Vec3 *surfaceNormal)
-{
-    // Compute the vector from the camera to the sphere
-    Vec3 L = vec3_subtract (camera.position ,sphere.position);
+// bool intersect_sphere(Vec3 direction, Vec3 *surfaceNormal)
+// {
+//     // Compute the vector from the camera to the sphere
+//     Vec3 L = vec3_subtract (camera.position ,sphere.position);
     
-    // Compute the coefficients a, b, and c for the quadratic equation
-    float a = dot_vec3(direction, direction);
-    float b = 2. * dot_vec3(direction, L);
-    float c = dot_vec3(L, L) - pow(sphere.radius, 2.);
+//     // Compute the coefficients a, b, and c for the quadratic equation
+//     float a = dot_vec3(direction, direction);
+//     float b = 2. * dot_vec3(direction, L);
+//     float c = dot_vec3(L, L) - pow(sphere.radius, 2.);
     
-    // Initialize the solutions to the quadratic equation
-    float t0 = 0;
-    float t1 = 0;
+//     // Initialize the solutions to the quadratic equation
+//     float t0 = 0;
+//     float t1 = 0;
     
-    // If the quadratic equation has solutions
-    if (solveQuadratic(a, b, c, &t0, &t1))
-    {
-        // Select the smaller of the two solutions
-        float t = t0;
-        if (t1 < t0)
-        {
-            t = t1;
-        }
+//     // If the quadratic equation has solutions
+//     if (solveQuadratic(a, b, c, &t0, &t1))
+//     {
+//         // Select the smaller of the two solutions
+//         float t = t0;
+//         if (t1 < t0)
+//         {
+//             t = t1;
+//         }
         
-        // Compute the point of intersection
-        Vec3 Phit = vec3_add(camera.position,vec3_multiply_float(direction, t));
-        // Compute the surface normal at the point of intersection
-        *surfaceNormal = normalize_vec3( vec3_subtract(Phit , sphere.position));
+//         // Compute the point of intersection
+//         Vec3 Phit = vec3_add(camera.position,vec3_multiply_float(direction, t));
+//         // Compute the surface normal at the point of intersection
+//         *surfaceNormal = normalize_vec3( vec3_subtract(Phit , sphere.position));
         
-        return true;
-    }  
+//         return true;
+//     }  
     
-    return false;
-}
+//     return false;
+// }
 
 bool intersect(Vec3 direction, Vec3 *surfaceNormal)
 {
@@ -135,30 +138,35 @@ bool intersect(Vec3 direction, Vec3 *surfaceNormal)
 Vec3 rayTrace(Vec3 direction)
 {
     Vec3 surfaceNormal;
-    
-    // If the ray intersects the sphere
+
+    // If the ray intersects the cylinder
     if (intersect(direction, &surfaceNormal))
     {
+        // Recalculate light direction
+        Vec3 lightDirection = normalize_vec3(vec3_subtract(light.position, camera.position));
+
         // Compute the reflection coefficient
-        float coeff = -1 * dot_vec3(light.direction, surfaceNormal);                          
+        float coeff = -1 * dot_vec3(lightDirection, surfaceNormal);
         // Clamp coeff to the range [0, 1]
-        coeff = coeff < 0 ? 0 : coeff;  
+        coeff = coeff < 0 ? 0 : coeff;
         // Compute the ambient color
-        Vec3 ambient = vec3_multiply_float(sphere.color, material.ambience);
-        // Compute the diffuse color
-        Vec3 diffuse = vec3_multiply_float(sphere.color, coeff * material.diffuse);
+        Vec3 ambient = vec3_multiply_float(cylinder.color, material.ambience);
+        
+        // Compute the diffuse color, include light.brightness
+        Vec3 diffuse = vec3_multiply_float(cylinder.color, coeff * material.diffuse * light.brightness);
 
         // Compute the reflected light direction
-        Vec3 reflectedLightDirection = reflect(light.direction, surfaceNormal);
+        Vec3 reflectedLightDirection = reflect(lightDirection, surfaceNormal);
         // Compute the shininess factor
         float shininess = pow(max(-dot_vec3(direction, reflectedLightDirection), 0.0), material.shininess);
-        shininess = shininess < 0 ? 0 : shininess; 
-        // Compute the specular color
-        Vec3 specular = vec3_multiply_float(sphere.color, shininess * material.specular);
+        shininess = shininess < 0 ? 0 : shininess;
+        // Compute the specular color, include light.brightness
+        Vec3 specular = vec3_multiply_float(cylinder.color, shininess * material.specular * light.brightness);
+        
         // Return the sum of the ambient, diffuse, and specular colors
-        return  vec3_add(vec3_add(ambient, diffuse), specular);
+        return vec3_add(vec3_add(ambient, diffuse), specular);
     }
-    
-    // If the ray does not intersect the sphere, return black
+
+    // If the ray does not intersect the cylinder, return black
     return vec3_create(0., 0., 0.);
 }
