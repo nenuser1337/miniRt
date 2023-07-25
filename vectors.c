@@ -1,6 +1,11 @@
 #include "vectors.h"
 
 
+#define EPSILON 1e-6
+
+bool vec3_equals(Vec3 a, Vec3 b) {
+    return fabs(a.r - b.r) < EPSILON && fabs(a.g - b.g) < EPSILON && fabs(a.b - b.b) < EPSILON;
+}
 
 Vec2 vec2_create(float x, float y) {
     Vec2 v;
@@ -166,5 +171,13 @@ Vec3 vec3_multiply_vec(Vec3 a, Vec3 b) {
     result.g = a.g * b.g;
     result.b = a.b * b.b;
 
+    return result;
+}
+
+Vec3 vec3_negate(Vec3 v) {
+    Vec3 result;
+    result.r = -v.r;
+    result.g = -v.g;
+    result.b = -v.b;
     return result;
 }

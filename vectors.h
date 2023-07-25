@@ -78,10 +78,13 @@ struct Light
     float brightness;  
 } light;
 
-struct AmbientLight {
+
+struct AmbientLight
+{
     float ratio;
     Vec3 color;
 } ambientLight;
+
 
 struct Camera {
     Vec3 position;
@@ -96,8 +99,13 @@ struct Material {
     float shininess; // The shininess coefficient
 } material;
 
+ struct Plane{
+    Vec3 normal;
+    float distance;
+    Vec3 color;
+} plane;
 
-struct Cylinder
+ struct Cylinder
 {
     Vec3 color;
     Vec3 position;
@@ -191,7 +199,7 @@ Ray InitOrbCam(Vec3 pos, Vec3 dir, float speed);
 //                  float m31, float m32, float m33);
 
 
-int plane(t_vars *vars );
+// int plane(t_vars *vars );
 // Vec3 vec3_multiply_mat3(Vec3 vec, Mat3 mat);
 Vec3 cross_vec3(Vec3 x, Vec3 y);
 float DistLine(Vec3 ro, Vec3 rd, Vec3 p);
@@ -221,4 +229,6 @@ bool intersect_sphere(Vec3 direction, Vec3 *surfaceNormal);
 int rendering(t_vars *vars);
 float vec3_length_squared(Vec3 v);
 Vec3 vec3_multiply_vec(Vec3 a, Vec3 b);
+bool vec3_equals(Vec3 a, Vec3 b);
+Vec3 vec3_negate(Vec3 v);
 #endif

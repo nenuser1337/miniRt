@@ -14,9 +14,10 @@ void	my_mlx_pixel_put(t_data *data, int x, int y, int color)
 
 int rendering(t_vars *vars)
 {
-    // Initialize the scene
+
+   // Initialize the scene
     setupScene();
-    
+
     // For every pixel on the screen
     for (int i = 0; i < WIDTH; i++) {
         for (int j = 0; j < HEIGHT; j++) {
@@ -29,12 +30,14 @@ int rendering(t_vars *vars)
             uv = vec2_subtract_scalar(uv, 0.5f);
             uv.x *= iResolution.x / iResolution.y;
 
-            // Adjust uv coordinates based on the FOV
-            uv.x *= camera.fov;
-            uv.y *= camera.fov;
 
             // Compute the direction from the camera to the pixel
-            Vec3 direction = normalize_vec3(vec3_subtract(vec3_create(uv.x, uv.y, 1.0), camera.position));
+            Vec3 direction = normalize_vec3(vec3_subtract(vec3_create(uv.x,uv.y, camera.fov) , camera.position));
+            // Modify the light's direction based on the mouse position
+            light.position.r = -((float)vars->mouse_x / WIDTH - 0.5f);
+            light.position.g = -((float)vars->mouse_y / HEIGHT - 0.5f);
+            light.position = normalize_vec3(light.position);
+
             // Trace the ray and compute the pixel color
             Vec3 col = rayTrace(direction);
 
@@ -55,8 +58,8 @@ int rendering(t_vars *vars)
     // Render the image to the window
     mlx_put_image_to_window(vars->mlx, vars->win, vars->img.img, 0, 0);
     return 0;
-}
 
+}
 int mouse_move(int x, int y, t_vars *vars)
 {
     vars->mouse_x = x;
@@ -72,9 +75,14 @@ int main(void)
     vars.img.img = mlx_new_image(vars.mlx, WIDTH, HEIGHT);
     vars.img.addr = mlx_get_data_addr(vars.img.img, &vars.img.bits_per_pixel, &vars.img.line_length,
                                  &vars.img.endian);
-  
+
+    vars.mouse_x = WIDTH / 2;
+    vars.mouse_y = HEIGHT / 2;
 
     mlx_loop_hook(vars.mlx,rendering , &vars);
-    
+      mlx_hook(vars.win, 6, 1L<<6, mouse_move, &vars);
+
+    // mlx_hook(vars.win, 2, 1L << 0, closing, &vars);
+	// //mlx_hook(vars.win, 17, 0, closingesc, &vars);
      mlx_loop(vars.mlx);
 }
