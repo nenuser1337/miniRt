@@ -12,6 +12,9 @@ void setupScene()
     sphere.radius = 0.3;
     sphere.color = vec3_create(0.6, 0.9, 0.3);
 
+    plane.point = vec3_create(0., 0.5, 0.);
+    plane.normal = vec3_create(0., 1., 0.);
+    plane.color = vec3_create(0.5, 0.5, 0.5);  // Plane color is grey
 
     cylinder.position = vec3_create(0., -0.5, 0.);
     cylinder.radius = 0.3;
@@ -19,15 +22,20 @@ void setupScene()
     cylinder.color = vec3_create(0.2, 0.3, 0.9);
 
     // Set the light's direction and normalize it
-    light.position = normalize_vec3(vec3_create(0., 1., -0.78));
+    light.position = normalize_vec3(vec3_create(0., -1., -0.78));
 
     // Set the material's ambience, diffuse, specular, and shininess properties
     material.ambience = 0.2;
     material.diffuse = 0.7;
     material.specular = 1.4;
     material.shininess = 12.0; 
+   
     ambientLight.ratio = 0.01;
-    ambientLight.color = vec3_create(255./255., 255./255., 255./255.); // Normalize color from [0-255] to [0.0-1.0]
+    ambientLight.color = vec3_multiply_float(vec3_create(255./255., 255./255., 255./255.), ambientLight.ratio); // Normalize color from [0-255] to [0.0-1.0]
+}
+
+float vec3_length(Vec3 v) {
+    return sqrt(v.r * v.r + v.g * v.g + v.b * v.b);
 }
 
 
@@ -54,6 +62,20 @@ bool solveQuadratic(float a, float b, float c,  float *t0,  float *t1)
     *t0 = (-b + sqrt(disc)) / (2. * a);
     *t1 = (-b - sqrt(disc)) / (2. * a);
     return true;    
+}
+
+bool intersect_plane(Vec3 direction, Vec3* Phit)
+{
+    float denom = dot_vec3(plane.normal, direction);
+    if (fabs(denom) < 0.0001) return false;  // parallel to the plane
+
+    float tTemp = dot_vec3(vec3_subtract(plane.point, camera.position), plane.normal) / denom;
+    if (tTemp >= 0.) {
+        *Phit = vec3_add(camera.position, vec3_multiply_float(direction, tTemp));
+        return true;
+    }
+
+    return false;
 }
 
 
@@ -133,35 +155,50 @@ bool intersect(Vec3 direction, Vec3 *surfaceNormal)
 
     return false;
 }
+
+
+
+
+
 // Function to trace a ray from the camera in the given direction
-Vec3 rayTrace(Vec3 direction)
-{
+Vec3 rayTrace(Vec3 direction) {
     Vec3 surfaceNormal;
+    Vec3 Phit;
 
     // If the ray intersects the sphere
-    if (intersect(direction, &surfaceNormal))
+     if (intersect_sphere(direction, &surfaceNormal))
     {
         // Compute the reflection coefficient
         float coeff = -1 * dot_vec3(light.position, surfaceNormal);                          
         // Clamp coeff to the range [0, 1]
         coeff = coeff < 0 ? 0 : coeff;  
-        // Compute the ambient color
-        Vec3 ambient = vec3_multiply_float(ambientLight.color, ambientLight.ratio) ;
-        // Compute the diffuse color
-        Vec3 diffuse = vec3_multiply_float(sphere.color, coeff * material.diffuse);
+        Vec3 directLightColor = vec3_multiply_float(sphere.color, coeff);
 
-        // Compute the reflected light direction
-        Vec3 reflectedLightDirection = reflect(light.position, surfaceNormal);
-        // Compute the shininess factor
-        float shininess = pow(max(-dot_vec3(direction, reflectedLightDirection), 0.0), material.shininess);
-        shininess = shininess < 0 ? 0 : shininess; 
-        // Compute the specular color
-        Vec3 specular = vec3_multiply_float(sphere.color, shininess * material.specular);
-        // Return the sum of the ambient, diffuse, and specular colors
-        return  vec3_add(vec3_add(ambient, diffuse), specular);
+        Vec3 ambientlight =vec3_multiply_vec(sphere.color, ambientLight.color);
+        return  vec3_add(directLightColor,ambientlight );
+    
     }
+        // Checking if the ray intersects the plane
+    if (intersect_plane(direction, &Phit))
+    {
+        // Calculate the shadow position. 
+        // We now project along the light direction.
+        Vec3 shadowPos = vec3_subtract(sphere.position, vec3_multiply_float(light.position, fabs(dot_vec3(vec3_subtract(sphere.position, plane.point), plane.normal))));
+
+        // Calculate the distance between the hit point and the shadow position.
+        float dist = vec3_length(vec3_subtract(shadowPos, Phit));
+
+        // If the distance is less than the radius, the hit point is in the shadow.
+        if (dist < sphere.radius) {
+            return vec3_create(0., 0., 0.);  // Shadow color
+        } else {
+            return plane.color;
+        }
+    }
+    
 
     // If the ray does not intersect the sphere, return black
     return vec3_create(0., 0., 0.);
 }
+
 

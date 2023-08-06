@@ -86,6 +86,14 @@ struct AmbientLight
 } ambientLight;
 
 
+struct Plane
+{
+    Vec3 point;
+    Vec3 normal;
+    Vec3 color;
+}plane;
+
+
 struct Camera {
     Vec3 position;
     Vec3 direction;
@@ -99,11 +107,7 @@ struct Material {
     float shininess; // The shininess coefficient
 } material;
 
- struct Plane{
-    Vec3 normal;
-    float distance;
-    Vec3 color;
-} plane;
+
 
  struct Cylinder
 {
