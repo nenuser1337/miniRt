@@ -114,7 +114,8 @@ struct Material {
     Vec3 color;
     Vec3 position;
     float radius;
-    float height;     
+    float height; 
+    Vec3 axis;    
 } cylinder;
 
 
@@ -235,4 +236,9 @@ float vec3_length_squared(Vec3 v);
 Vec3 vec3_multiply_vec(Vec3 a, Vec3 b);
 bool vec3_equals(Vec3 a, Vec3 b);
 Vec3 vec3_negate(Vec3 v);
+mat3 rotationToY(Vec3 dir);
+mat3 mat3_add(mat3 m1, mat3 m2);
+mat3 mat3_multiply_scalar(mat3 m, float scalar);
+mat3 mat3_multiply(mat3 m1, mat3 m2);
+Vec3 mat3_multiply_vec3(mat3 m, Vec3 v);
 #endif

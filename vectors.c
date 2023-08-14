@@ -181,3 +181,92 @@ Vec3 vec3_negate(Vec3 v) {
     result.b = -v.b;
     return result;
 }
+mat3 mat3_add(mat3 m1, mat3 m2) {
+    mat3 result;
+
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 3; j++) {
+            result.m[i][j] = m1.m[i][j] + m2.m[i][j];
+        }
+    }
+
+    return result;
+}
+mat3 mat3_multiply_scalar(mat3 m, float scalar) {
+    mat3 result;
+
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 3; j++) {
+            result.m[i][j] = m.m[i][j] * scalar;
+        }
+    }
+
+    return result;
+}
+mat3 mat3_multiply(mat3 m1, mat3 m2) {
+    mat3 result;
+
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 3; j++) {
+            result.m[i][j] = 0.0;  // Initialize the result element to 0
+            for (int k = 0; k < 3; k++) {
+                result.m[i][j] += m1.m[i][k] * m2.m[k][j];
+            }
+        }
+    }
+
+    return result;
+}
+
+mat3 rotationToY(Vec3 dir) {
+    Vec3 yAxis = vec3_create(0.0, 1.0, 0.0);
+    
+    // Cross product
+    Vec3 v = cross_vec3(dir, yAxis); // Assuming you have a function named cross_vec3 for cross product
+    
+    // Length of the vector
+    float s = vec3_length(v); // Using your vec3_length function
+    
+    // Dot product
+    float c = dot_vec3(dir, yAxis); // Assuming you have a function named dot_vec3 for dot product
+    
+    // Create the skew-symmetric matrix for v
+    mat3 vMat = mat3_create(
+        vec3_create(0, -v.b, v.g),
+        vec3_create(v.b, 0, -v.r),
+        vec3_create(-v.g, v.r, 0)
+    );
+
+    // Identity matrix
+    mat3 identity = mat3_create(
+        vec3_create(1.0, 0.0, 0.0),
+        vec3_create(0.0, 1.0, 0.0),
+        vec3_create(0.0, 0.0, 1.0)
+    );
+
+    // Assuming you have matrix addition and multiplication functions:
+    // mat3_add for matrix addition
+    // mat3_multiply for matrix multiplication
+    // mat3_multiply_scalar for matrix-scalar multiplication
+    return mat3_add(
+        identity,
+        mat3_add(
+            vMat,
+            mat3_multiply_scalar(
+                mat3_multiply(vMat, vMat),
+                (1.0 - c) / (s * s)
+            )
+        )
+    );
+}
+
+
+Vec3 mat3_multiply_vec3(mat3 m, Vec3 v) {
+    Vec3 result;
+
+    result.r = m.m[0][0] * v.r + m.m[0][1] * v.g + m.m[0][2] * v.b;
+    result.g = m.m[1][0] * v.r + m.m[1][1] * v.g + m.m[1][2] * v.b;
+    result.b = m.m[2][0] * v.r + m.m[2][1] * v.g + m.m[2][2] * v.b;
+
+    return result;
+}

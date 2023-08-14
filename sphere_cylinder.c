@@ -17,7 +17,8 @@ void setupScene()
     plane.color = vec3_create(0.5, 0.5, 0.5);  // Plane color is grey
 
     cylinder.position = vec3_create(0., -0.5, 0.);
-    cylinder.radius = 0.3;
+    cylinder.axis = normalize_vec3(vec3_create(1.7, 1.8, 2.));
+    cylinder.radius = 0.1;
     cylinder.height = 1.0;
     cylinder.color = vec3_create(0.2, 0.3, 0.9);
 
@@ -114,6 +115,39 @@ bool intersect_sphere(Vec3 direction, Vec3 *surfaceNormal)
     return false;
 }
 
+bool intersect_cylinder(Vec3 direction, Vec3* surfaceNormal) {
+    // Calculate the rotation matrix and its inverse
+    mat3 rotationMatrix = rotationToY(cylinder.axis);
+    mat3 inverseRotation = mat3_transpose(rotationMatrix); // Since it's a rotation matrix, transpose is its inverse
+    
+    Vec3 rayOriginLocal = mat3_multiply_vec3(inverseRotation, vec3_subtract(camera.position, cylinder.position)); // Assuming you have a function mat3_multiply_vec3
+    Vec3 rayDirLocal = mat3_multiply_vec3(inverseRotation, direction);
+
+    float r = cylinder.radius ;
+
+    float a = rayDirLocal.r * rayDirLocal.r + rayDirLocal.b * rayDirLocal.b;
+    float b = 2.0 * (rayOriginLocal.r * rayDirLocal.r + rayOriginLocal.b * rayDirLocal.b);
+    float c = rayOriginLocal.r * rayOriginLocal.r + rayOriginLocal.b * rayOriginLocal.b - r * r;
+
+    float t0, t1;
+    if (solveQuadratic(a, b, c, &t0, &t1)) {
+        float t = fmin(t0, t1); // Use fmin from math.h
+        Vec3 PhitLocal = vec3_add(rayOriginLocal, vec3_multiply_float(rayDirLocal, t));
+
+        float yDiff = PhitLocal.g;
+        if(yDiff < 0.0 || yDiff > cylinder.height) {
+            return false;
+        }
+
+        Vec3 Phit = vec3_add(mat3_multiply_vec3(rotationMatrix, PhitLocal), cylinder.position);
+        *surfaceNormal = normalize_vec3(mat3_multiply_vec3(rotationMatrix, vec3_create(PhitLocal.r, 0.0, PhitLocal.b)));
+        return true;
+    }
+    return false;
+}
+
+
+
 bool intersect(Vec3 direction, Vec3 *surfaceNormal)
 {
    // Compute the vector from the camera to the cylinder
@@ -166,7 +200,7 @@ Vec3 rayTrace(Vec3 direction) {
     Vec3 Phit;
 
     // If the ray intersects the sphere
-     if (intersect_sphere(direction, &surfaceNormal))
+     if (intersect_cylinder(direction, &surfaceNormal))
     {
         // Compute the reflection coefficient
         float coeff = -1 * dot_vec3(light.position, surfaceNormal);                          
@@ -179,22 +213,22 @@ Vec3 rayTrace(Vec3 direction) {
     
     }
         // Checking if the ray intersects the plane
-    if (intersect_plane(direction, &Phit))
-    {
-        // Calculate the shadow position. 
-        // We now project along the light direction.
-        Vec3 shadowPos = vec3_subtract(sphere.position, vec3_multiply_float(light.position, fabs(dot_vec3(vec3_subtract(sphere.position, plane.point), plane.normal))));
+    // if (intersect_plane(direction, &Phit))
+    // {
+    //     // Calculate the shadow position. 
+    //     // We now project along the light direction.
+    //     Vec3 shadowPos = vec3_add(sphere.position, vec3_multiply_float(light.position, fabs(dot_vec3(vec3_subtract(sphere.position, plane.point), plane.normal))));
 
-        // Calculate the distance between the hit point and the shadow position.
-        float dist = vec3_length(vec3_subtract(shadowPos, Phit));
+    //     // Calculate the distance between the hit point and the shadow position.
+    //     float dist = vec3_length(vec3_subtract(shadowPos, Phit));
 
-        // If the distance is less than the radius, the hit point is in the shadow.
-        if (dist < sphere.radius) {
-            return vec3_create(0., 0., 0.);  // Shadow color
-        } else {
-            return plane.color;
-        }
-    }
+    //     // If the distance is less than the radius, the hit point is in the shadow.
+    //     if (dist < sphere.radius) {
+    //         return vec3_create(0., 0., 0.);  // Shadow color
+    //     } else {
+    //         return plane.color;
+    //     }
+    //  }
     
 
     // If the ray does not intersect the sphere, return black
