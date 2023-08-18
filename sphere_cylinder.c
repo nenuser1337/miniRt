@@ -115,6 +115,39 @@ bool intersect_sphere(Vec3 direction, Vec3 *surfaceNormal)
     return false;
 }
 
+bool isInShadow(Vec3 point, Vec3 dirToLight)
+{
+    Vec3 L = vec3_subtract(point, cylinder.position);
+
+    // Check if the light is behind the cylinder relative to the point
+    Vec3 toCylinderFromPoint = normalize_vec3(vec3_subtract(cylinder.position, point));
+    float lightBehindCylinder = dot_vec3(toCylinderFromPoint, dirToLight);
+    if (lightBehindCylinder <= 0.0) return false; // Light is not behind the cylinder
+
+    float r = cylinder.radius; // Assuming you have a radius property in your cylinder structure
+    
+    float a = dirToLight.r * dirToLight.r + dirToLight.b * dirToLight.b;
+    float b = 2.0 * (L.r * dirToLight.r + L.b * dirToLight.b);
+    float c = L.r * L.r + L.b * L.b - r * r;
+
+    float t0, t1;
+
+    if (solveQuadratic(a, b, c, &t0, &t1))
+    {
+        float t = fmax(t0, t1); // Use fmax from math.h
+        Vec3 Phit = vec3_add(point, vec3_multiply_float(dirToLight, t));
+        
+        float yDiff = Phit.g - cylinder.position.g; // Using .g for the y component based on your code
+        if(yDiff < 0.0 || yDiff > cylinder.height)
+        {
+            return false;
+        }
+        return true;
+    }
+    return false;
+}
+
+
 bool intersect_cylinder(Vec3 direction, Vec3* surfaceNormal) {
     // Calculate the rotation matrix and its inverse
     mat3 rotationMatrix = rotationToY(cylinder.axis);
@@ -212,24 +245,17 @@ Vec3 rayTrace(Vec3 direction) {
         return  vec3_add(directLightColor,ambientlight );
     
     }
-        // Checking if the ray intersects the plane
-    // if (intersect_plane(direction, &Phit))
-    // {
-    //     // Calculate the shadow position. 
-    //     // We now project along the light direction.
-    //     Vec3 shadowPos = vec3_add(sphere.position, vec3_multiply_float(light.position, fabs(dot_vec3(vec3_subtract(sphere.position, plane.point), plane.normal))));
-
-    //     // Calculate the distance between the hit point and the shadow position.
-    //     float dist = vec3_length(vec3_subtract(shadowPos, Phit));
-
-    //     // If the distance is less than the radius, the hit point is in the shadow.
-    //     if (dist < sphere.radius) {
-    //         return vec3_create(0., 0., 0.);  // Shadow color
-    //     } else {
-    //         return plane.color;
-    //     }
-    //  }
-    
+        if (intersect_plane(direction, &Phit))
+    {
+      if (isInShadow(vec3_negate(Phit), vec3_negate(light.position)))
+    {
+        return vec3_create(0., 0., 0.);  // Shadow color
+    }
+    else
+    {
+        return plane.color;
+    }
+    }
 
     // If the ray does not intersect the sphere, return black
     return vec3_create(0., 0., 0.);

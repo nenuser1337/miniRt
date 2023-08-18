@@ -241,4 +241,6 @@ mat3 mat3_add(mat3 m1, mat3 m2);
 mat3 mat3_multiply_scalar(mat3 m, float scalar);
 mat3 mat3_multiply(mat3 m1, mat3 m2);
 Vec3 mat3_multiply_vec3(mat3 m, Vec3 v);
+bool isInShadow(Vec3 point, Vec3 dirToLight);
+Vec3 vec3_negate(Vec3 v);
 #endif
