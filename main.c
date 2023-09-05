@@ -30,6 +30,23 @@ int rendering(t_vars *vars)
             uv = vec2_subtract_scalar(uv, 0.5f);
             uv.x *= iResolution.x / iResolution.y;
 
+            Vec3 initialRayDir = normalize_vec3(vec3_create(uv.x, uv.y, -camera.zoom));   
+             // Create an "up" vector
+                Vec3 up = vec3_create(0.0, 1.0, 0.0);
+
+                // Create a "right" vector
+                Vec3 right = normalize_vec3(cross_vec3(camera.direction, up));
+
+                // Recalculate the "up" vector
+                 up = normalize_vec3(cross_vec3(right, camera.direction));
+                // Apply rotation
+   
+                 Vec3 term1 = vec3_multiply_scalar(right, initialRayDir.r);
+                    Vec3 term2 = vec3_multiply_scalar(up, initialRayDir.g);
+                    Vec3 term3 = vec3_multiply_scalar(camera.direction, initialRayDir.b);
+
+                    Vec3 rotatedRayDir = vec3_add(vec3_add(term1, term2), term3);
+
 
             // Compute the direction from the camera to the pixel
             Vec3 direction = normalize_vec3(vec3_subtract(vec3_create(uv.x,uv.y, camera.zoom) , camera.position));
@@ -39,7 +56,7 @@ int rendering(t_vars *vars)
             light.direction = normalize_vec3(light.direction);
 
             // Trace the ray and compute the pixel color
-            Vec3 col = rayTrace(direction);
+            Vec3 col = rayTrace(rotatedRayDir);
 
             // Clamp the color components to the range [0, 1]
             col.r = fmax(0.0, fmin(col.r, 1.0));
