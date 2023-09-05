@@ -12,6 +12,7 @@
 
 #include <time.h>
 
+#define MAX_CYLINDERS 10 
 
 
 typedef struct	s_data {
@@ -64,6 +65,14 @@ typedef struct {
 
 
 
+struct Camera 
+{
+    Vec3 position;
+    Vec3 direction;
+    float zoom;
+    
+} camera;
+
 struct Sphere
 {
     Vec3 color;
@@ -73,18 +82,8 @@ struct Sphere
 
 struct Light
 {
-	Vec3 position;
-    Vec3 color;
-    float brightness;  
+	Vec3 direction;    
 } light;
-
-
-struct AmbientLight
-{
-    float ratio;
-    Vec3 color;
-} ambientLight;
-
 
 struct Plane
 {
@@ -93,30 +92,17 @@ struct Plane
     Vec3 color;
 }plane;
 
-
-struct Camera {
-    Vec3 position;
-    Vec3 direction;
-    float fov;
-}   camera;
-
-struct Material {
-    float ambience;  // The ambient reflection coefficient
-    float diffuse;   // The diffuse reflection coefficient
-    float specular;  // The specular reflection coefficient
-    float shininess; // The shininess coefficient
-} material;
-
-
-
- struct Cylinder
+struct Cylinder
 {
     Vec3 color;
     Vec3 position;
-    float radius;
-    float height; 
-    Vec3 axis;    
+    Vec3 axis;   // normalized direction of the cylinder's axis
+    float diameter;
+    float height;
 } cylinder;
+
+
+
 
 
 Vec2 vec2_create(float x, float y);
@@ -210,7 +196,7 @@ Vec3 cross_vec3(Vec3 x, Vec3 y);
 float DistLine(Vec3 ro, Vec3 rd, Vec3 p);
 void setupScene();
 bool solveQuadratic(float a, float b, float c,  float *t0,  float *t1);
-bool intersect(Vec3 direction, Vec3 *surfaceNormal);
+bool intersect(Vec3 rayOrigin, Vec3 rayDirection, Vec3* surfaceNormal, struct Cylinder cylinder);
 Vec3 rayTrace(Vec3 direction);
 int sphere_shader(t_vars *vars);
 int mouse_move(int x, int y, t_vars *vars);
@@ -230,7 +216,7 @@ float step(float edge, float x);
 float inversesqrt(float x);
 int cylinder_raytracing(t_vars *vars);
 float sign(float x);
-bool intersect_sphere(Vec3 direction, Vec3 *surfaceNormal);
+bool intersect_sphere(struct Sphere sphere, Vec3 rayOrigin, Vec3 rayDirection, Vec3 *surfaceNormal, float *tHit);
 int rendering(t_vars *vars);
 float vec3_length_squared(Vec3 v);
 Vec3 vec3_multiply_vec(Vec3 a, Vec3 b);

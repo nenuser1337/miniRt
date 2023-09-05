@@ -47,7 +47,7 @@ Vec3 vec3_multiply_float(Vec3 v, float scalar) {
 // }
 
 
-// Function to create a mat3 from three vec3
+// Function to create a mat3 from three vec3    
 mat3 mat3_create(Vec3 t, Vec3 b, Vec3 n) {
     mat3 matrix;
     for (int i = 0; i < 3; i++) {

@@ -32,11 +32,11 @@ int rendering(t_vars *vars)
 
 
             // Compute the direction from the camera to the pixel
-            Vec3 direction = normalize_vec3(vec3_subtract(vec3_create(uv.x,uv.y, camera.fov) , camera.position));
+            Vec3 direction = normalize_vec3(vec3_subtract(vec3_create(uv.x,uv.y, camera.zoom) , camera.position));
             // Modify the light's direction based on the mouse position
-            light.position.r = -((float)vars->mouse_x / WIDTH - 0.5f);
-            light.position.g = -((float)vars->mouse_y / HEIGHT - 0.5f);
-            light.position = normalize_vec3(light.position);
+            light.direction.r = -((float)vars->mouse_x / WIDTH - 0.5f);
+            light.direction.g = -((float)vars->mouse_y / HEIGHT - 0.5f);
+            light.direction = normalize_vec3(light.direction);
 
             // Trace the ray and compute the pixel color
             Vec3 col = rayTrace(direction);
